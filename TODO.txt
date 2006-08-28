@@ -1,0 +1,12 @@
+HTTP::Daemon::Threaded TO DO:
+
+- SSL support via Crypt::SSLeay(or IO::Socket::SSL) + OpenSSL
+
+- add user auth support
+
+- implement more/better Session/SessionCache object subclasses
+
+- permit a WebClient to handle multiple open sockets
+
+- add DBIPool object to contain both DBI (rather, DBIx::Threaded)
+	connection and statement pools

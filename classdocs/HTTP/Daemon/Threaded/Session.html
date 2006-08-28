@@ -1,0 +1,590 @@
+
+<html>
+<head>
+<title>HTTP::Daemon::Threaded::Session</title>
+</head>
+<body>
+<table width='100%' border=0 CELLPADDING='0' CELLSPACING='3'>
+<TR>
+<TD VALIGN='top' align=left><FONT SIZE='-2'>
+ SUMMARY:&nbsp;<A HREF='#constructor_summary'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_summary'>METHOD</a>
+ </FONT></TD>
+<TD VALIGN='top' align=right><FONT SIZE='-2'>
+DETAIL:&nbsp;<A HREF='#constructor_detail'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_detail'>METHOD</a>
+</FONT></TD>
+</TR>
+</table><hr>
+<h2>Class HTTP::Daemon::Threaded::Session</h2>
+
+<hr>
+
+
+Abstract base class for Session classes.
+Provides an interface definition for
+a single threads::shared session context container.
+Loosely based on the <a href='http://java.sun.com/j2ee/tutorial/1_3-fcs/doc/Servlets.html'>
+Java Servlets</a> <a href='http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/http/HttpSession.html'>
+HttpSession</a> class.
+<p>
+<b>Note:</b> This implementation does not provide interfaces for user
+authorization/authentication. The intent is to outsource such functionality
+to the application level, which can populate and retrieve attributes
+as needed, and apply any encryption or privileges in an application specific
+manner. Future releases may provide stock objects providing common auth&amp;auth
+functionality.
+<p>
+<b>Note2:</b> The default implementation does not support Set-Cookie2/Cookie2
+HTTP headers.
+<p>
+Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 2.1, as specified in the
+License.txt file included in this software package, or at
+<a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
+
+
+<p>
+
+<dl>
+
+<dt><b>Author:</b></dt>
+	<dd>D. Arnold</dd>
+
+<dt><b>Version:</b></dt>
+	<dd>0.90</dd>
+
+<dt><b>Since:</b></dt>
+	<dd>2006-08-21
+</dd>
+
+<dt><b>See Also:</b></dt>
+	<dd><a href='http://java.sun.com/j2ee/tutorial/1_3-fcs/doc/Servlets.html'>Java Servlets</a></dd>
+
+<p>
+<i>Unless otherwise noted, <code>$self
+</code> is the object instance variable.</i>
+<p>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Constructor Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#HTTP::Daemon::Threaded::Session'>new</a>($cache, $id, $timeout, $dough, $expires)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Uses input ID, Inactivity timeout, cookie "dough"
+and expiration timestamp to create a new session context
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#HTTP::Daemon::Threaded::Session'>open</a>($id, $cache)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Uses input identifier to load a session context
+from persistent storage
+</td></tr>
+</table><p>
+
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Method Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#close'>close</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes this session and removes it from the parent SessionCache
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#cookieSent'>cookieSent</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Called to indicate that the cookie has been sent to the client
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getAttribute'>getAttribute</a>($name)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the object bound with the specified name
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getAttributeNames'>getAttributeNames</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the list of attributes bound to this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getCookie'>getCookie</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns this session's cookie
+
+
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getCreationTime'>getCreationTime</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the creation time of this session as a fractional number
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getExpiration'>getExpiration</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Get expiration on this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getID'>getID</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the unique ID time of this session
+<p>
+<b>NOTE:</b> As a read operation on a static value, no lock is required
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getLastAccessedTime'>getLastAccessedTime</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the last time the client sent a request for this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getMaxInactiveInterval'>getMaxInactiveInterval</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns the last time the client sent a request for this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#isInactive'>isInactive</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Has this session timed out ?
+
+
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#isNew'>isNew</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Returns true if the cookie for the session has not yet been sent to the client
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#removeAttribute'>removeAttribute</a>($name)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Removes the object bound to the specified name from this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setAttribute'>setAttribute</a>($name, $value)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set an attribute on this session, using the name specified
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setExpiration'>setExpiration</a>($expires)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set expiration on this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setLastAccessedTime'>setLastAccessedTime</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set the last time the client sent a request for this session
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setMaxInactiveInterval'>setMaxInactiveInterval</a>($timeout)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set the max inactivity interval, in seconds, for this session
+</td></tr>
+</table>
+<p>
+
+<a name='constructor_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Constructor Details</font></th>
+</tr>
+</table>
+
+<a name='open'></a>
+<h3>open</h3>
+<pre>
+open($id, $cache)
+</pre><p>
+<dl>
+<dd>Uses input identifier to load a session context
+from persistent storage.
+<p>
+<b>NOTE:</b> this default implementation simply returns undef,
+as it does not use persistent storage
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$id</code> - unique identifier for the session to be recovered
+</dd>
+<dd><code>$cache</code> - parent SessionCache object
+
+</dd>
+<dt><b>Returns:</b><dd>undef if the session cannot be recovered, otherwise, the
+HTTP::Daemon::Threaded::Session object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='new'></a>
+<h3>new</h3>
+<pre>
+new($cache, $id, $timeout, $dough, $expires)
+</pre><p>
+<dl>
+<dd>Uses input ID, Inactivity timeout, cookie "dough"
+and expiration timestamp to create a new session context.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$cache</code> - <i>(required)</i> parent SessionCache object
+</dd>
+<dd><code>$id</code> - <i>(optional)</i> unique identifier for the session; default is generated from
+an internal integer generator
+</dd>
+<dd><code>$timeout</code> - <i>(optional)</i> max inactivity timeout; default is 10 minutes
+</dd>
+<dd><code>$dough</code> - <i>(optional)</i> any information to be included in the session cookie;
+the $id will be prepended to this information
+</dd>
+<dd><code>$expires</code> - <i>(optional)</i> RFC1123 formatted cookie expiration date string, or 'Never'; default
+is single session (nonpersistent)
+
+</dd>
+<dt><b>Returns:</b><dd>HTTP::Response object
+</dd>
+</dl></dd></dl><hr>
+
+<p>
+
+<a name='method_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Method Details</font></th>
+</tr></table>
+
+<a name='close'></a>
+<h3>close</h3>
+<pre>
+close()
+</pre><p>
+<dl>
+<dd>Closes this session and removes it from the parent SessionCache.
+May cause any underlying persistent session store to delete its
+version of the session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>undef (to optimize clearing any containers)
+</dd>
+</dl></dd></dl><hr>
+
+<a name='cookieSent'></a>
+<h3>cookieSent</h3>
+<pre>
+cookieSent()
+</pre><p>
+<dl>
+<dd>Called to indicate that the cookie has been sent to the client.
+<p>
+<b>Note:</b> Subclasses which implement <code>open()</code> should
+already set this flag when a session is successfully recovered.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>this Session object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getAttribute'></a>
+<h3>getAttribute</h3>
+<pre>
+getAttribute($name)
+</pre><p>
+<dl>
+<dd>Returns the object bound with the specified name.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$name</code> - name of attribute to retrieve
+
+</dd>
+<dt><b>Returns:</b><dd>the value of the named attribute (if any)
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getAttributeNames'></a>
+<h3>getAttributeNames</h3>
+<pre>
+getAttributeNames()
+</pre><p>
+<dl>
+<dd>Returns the list of attributes bound to this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>(the alphabetically sorted list of attribute names
+)</dd>
+</dl></dd></dl><hr>
+
+<a name='getCookie'></a>
+<h3>getCookie</h3>
+<pre>
+getCookie()
+</pre><p>
+<dl>
+<dd>Returns this session's cookie
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the cookie string, including the unique session ID, and any dough and/or
+expiration date supplied when the session was created
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getCreationTime'></a>
+<h3>getCreationTime</h3>
+<pre>
+getCreationTime()
+</pre><p>
+<dl>
+<dd>Returns the creation time of this session as a fractional number.
+<p>
+<b>NOTE:</b> As a read operation on a static value, no lock is required.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the creation time of the session as a floating point number of seconds
+since the epoch.
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getExpiration'></a>
+<h3>getExpiration</h3>
+<pre>
+getExpiration()
+</pre><p>
+<dl>
+<dd>Get expiration on this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the RFC1123 formatted expiration (if any)
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getID'></a>
+<h3>getID</h3>
+<pre>
+getID()
+</pre><p>
+<dl>
+<dd>Returns the unique ID time of this session
+<p>
+<b>NOTE:</b> As a read operation on a static value, no lock is required.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the ID string
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getLastAccessedTime'></a>
+<h3>getLastAccessedTime</h3>
+<pre>
+getLastAccessedTime()
+</pre><p>
+<dl>
+<dd>Returns the last time the client sent a request for this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the time as a floating point number of seconds sinc the epoch
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getMaxInactiveInterval'></a>
+<h3>getMaxInactiveInterval</h3>
+<pre>
+getMaxInactiveInterval()
+</pre><p>
+<dl>
+<dd>Returns the last time the client sent a request for this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>the time as a floating point number of seconds sinc the epoch
+</dd>
+</dl></dd></dl><hr>
+
+<a name='isInactive'></a>
+<h3>isInactive</h3>
+<pre>
+isInactive()
+</pre><p>
+<dl>
+<dd>Has this session timed out ?
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>boolean true if the inactivity timeout has expired; else false
+</dd>
+</dl></dd></dl><hr>
+
+<a name='isNew'></a>
+<h3>isNew</h3>
+<pre>
+isNew()
+</pre><p>
+<dl>
+<dd>Returns true if the cookie for the session has not yet been sent to the client.
+Note that this session instance may have been revivified from persistent storage,
+and has not yet sent its cookie to the client, but the client has previously
+stored the cookie, in which case this method should return false.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>1 if the cookie has not been sent, undef otherwise
+</dd>
+</dl></dd></dl><hr>
+
+<a name='removeAttribute'></a>
+<h3>removeAttribute</h3>
+<pre>
+removeAttribute($name)
+</pre><p>
+<dl>
+<dd>Removes the object bound to the specified name from this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$name</code> - name of attribute to remove
+</dd>
+<dt><b>Returns:</b><dd>the value of the removed attribute
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setAttribute'></a>
+<h3>setAttribute</h3>
+<pre>
+setAttribute($name, $value)
+</pre><p>
+<dl>
+<dd>Set an attribute on this session, using the name specified.
+<p>
+<b>NOTE:</b> Since Session objects are threads shared, their
+attributes hash is also threads::shared, which means that
+any non-scalar values to be assigned to an attribute must
+also be threads::shared.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$name</code> - name of attribute to set
+</dd>
+<dd><code>$value</code> - value of the attribute to set
+</dd>
+<dt><b>Returns:</b><dd>the Session object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setExpiration'></a>
+<h3>setExpiration</h3>
+<pre>
+setExpiration($expires)
+</pre><p>
+<dl>
+<dd>Set expiration on this session. If no date is given,
+then the cookie is expired.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$expires</code> - RFC1123 expiration timestamp
+
+</dd>
+<dt><b>Returns:</b><dd>the Session object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setLastAccessedTime'></a>
+<h3>setLastAccessedTime</h3>
+<pre>
+setLastAccessedTime()
+</pre><p>
+<dl>
+<dd>Set the last time the client sent a request for this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>this Session object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setMaxInactiveInterval'></a>
+<h3>setMaxInactiveInterval</h3>
+<pre>
+setMaxInactiveInterval($timeout)
+</pre><p>
+<dl>
+<dd>Set the max inactivity interval, in seconds, for this session.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>$timeout</code> - inactivity interval in seconds
+</dd>
+<dt><b>Returns:</b><dd>this Session object
+</dd>
+</dl></dd></dl><hr>
+
+<small>
+<center>
+<i>Generated by psichedoc on Mon Aug 28 09:45:39 2006</i>
+</center>
+</small>
+</body>
+</html>

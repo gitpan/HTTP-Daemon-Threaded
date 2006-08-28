@@ -1,0 +1,319 @@
+
+<html>
+<head>
+<title>HTTP::Daemon::Threaded::Logger</title>
+</head>
+<body>
+<table width='100%' border=0 CELLPADDING='0' CELLSPACING='3'>
+<TR>
+<TD VALIGN='top' align=left><FONT SIZE='-2'>
+ SUMMARY:&nbsp;<A HREF='#constructor_summary'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_summary'>METHOD</a>
+ </FONT></TD>
+<TD VALIGN='top' align=right><FONT SIZE='-2'>
+DETAIL:&nbsp;<A HREF='#constructor_detail'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_detail'>METHOD</a>
+</FONT></TD>
+</TR>
+</table><hr>
+<h2>Class HTTP::Daemon::Threaded::Logger</h2>
+
+<p>
+<dl>
+<dt><b>Inherits from:</b>
+<dd><a href='../../../Thread/Apartment/Server.html'>Thread::Apartment::Server</a></dd>
+</dt>
+</dl>
+
+<hr>
+
+Interface specification for an apartment threaded Logger component. Opens the logfile.
+Accepts log messages, prefixes them with
+timestamps, and writes them to the logfile. Also inspects the size and
+lifetime of the current logfile at regular intervals; when either size or
+lifetime exceeds the defined maximums (or at the direction of an external
+control command), closes and renames the current logfile, and then opens
+a new logfile.
+<p>
+Classes which use a Logger object should inherit the HTTP::Daemon::Threaded::Logable
+class. While this class provides a default implementation, applications should
+implement their own subclasses, and create instances to be passed to HTTP::Daemon::Threaded
+as either the EventLogger and/or WebLogger parameters.
+<p>
+Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 2.1, as specified in the
+License.txt file included in this software package, or at
+<a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
+
+
+<p>
+
+<dl>
+
+<dt><b>Author:</b></dt>
+	<dd>D. Arnold</dd>
+
+<dt><b>Version:</b></dt>
+	<dd>0.90</dd>
+
+<dt><b>Since:</b></dt>
+	<dd>2005-08-21
+</dd>
+
+<p>
+<i>Unless otherwise noted, <code>$self
+
+</code> is the object instance variable.</i>
+<p>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Constructor Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#HTTP::Daemon::Threaded::Logger'>new</a>(AptTimeout =&gt; <i>value</i>, Path =&gt; <i>value</i>, MaxSize =&gt; <i>value</i>, Lifetime =&gt; <i>value</i>)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Opens the logfile
+</td></tr>
+</table><p>
+
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Method Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#close'>close</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Close the logfile
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#get_simplex_methods'>get_simplex_methods</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Overrides Thread::Apartment::Server::get_simplex_methods()
+
+
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#log'>log</a>($msg)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Append a log message to the logfile
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#truncate'>truncate</a>($newpath)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Truncate the logfile
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#updateLifetime'>updateLifetime</a>($lifetime)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update logfile lifetime
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#updateMaxSize'>updateMaxSize</a>($maxsize)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update logfile maximum size
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#updatePath'>updatePath</a>($path)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update logfile name
+</td></tr>
+</table>
+<p>
+
+<a name='constructor_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Constructor Details</font></th>
+</tr>
+</table>
+
+<a name='new'></a>
+<h3>new</h3>
+<pre>
+new(AptTimeout =&gt; <i>value</i>, Path =&gt; <i>value</i>, MaxSize =&gt; <i>value</i>, Lifetime =&gt; <i>value</i>)
+</pre><p>
+<dl>
+<dd>Opens the logfile. If the logfile is too old or big,
+it is truncated (i.e., closed, and renamed with the current timestamp
+as its suffix, and a new file is created). An initial startup log
+message is written.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>AptTimeout</code> =&gt; maximum Thread::Apartment proxy method call timeout
+</dd>
+<dd><code>Path</code> =&gt; pathname of logfile
+</dd>
+<dd><code>MaxSize</code> =&gt; maximum size of logfile, in megabytes
+</dd>
+<dd><code>Lifetime</code> =&gt; maximum lifetime of logfile, in hours
+
+</dd>
+<dt><b>Returns:</b><dd>HTTP::Daemon::Threaded::Logger object
+</dd>
+</dl></dd></dl><hr>
+
+<p>
+
+<a name='method_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Method Details</font></th>
+</tr></table>
+
+<a name='close'></a>
+<h3>close</h3>
+<pre>
+close()
+</pre><p>
+<dl>
+<dd>Close the logfile.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<a name='get_simplex_methods'></a>
+<h3>get_simplex_methods</h3>
+<pre>
+get_simplex_methods()
+</pre><p>
+<dl>
+<dd>Overrides Thread::Apartment::Server::get_simplex_methods()
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>hashref of simplex method names
+</dd>
+</dl></dd></dl><hr>
+
+<a name='log'></a>
+<h3>log</h3>
+<pre>
+log($msg)
+</pre><p>
+<dl>
+<dd>Append a log message to the logfile. The current timestamp
+is prepended to the message before it is logged.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$msg</code> - log message text
+
+</dd>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<a name='truncate'></a>
+<h3>truncate</h3>
+<pre>
+truncate($newpath)
+</pre><p>
+<dl>
+<dd>Truncate the logfile. Close the current file, rename it
+with the current timestamp appended to its name, and create
+a new logfile. Writes an introductory message to the log.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$newpath</code> - optional new logfile path
+
+</dd>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<a name='updateLifetime'></a>
+<h3>updateLifetime</h3>
+<pre>
+updateLifetime($lifetime)
+</pre><p>
+<dl>
+<dd>Update logfile lifetime. Called from WebClient.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$lifetime</code> - lifetime in hours.
+
+</dd>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<a name='updateMaxSize'></a>
+<h3>updateMaxSize</h3>
+<pre>
+updateMaxSize($maxsize)
+</pre><p>
+<dl>
+<dd>Update logfile maximum size. Called from WebClient.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$maxsize</code> - Maximum size in megabytes.
+
+</dd>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<a name='updatePath'></a>
+<h3>updatePath</h3>
+<pre>
+updatePath($path)
+</pre><p>
+<dl>
+<dd>Update logfile name. Called from WebClient.
+Truncates the existing logfile.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$path</code> - new logfile name
+
+</dd>
+<dt><b>Returns:</b><dd>none
+</dd>
+</dl></dd></dl><hr>
+
+<small>
+<center>
+<i>Generated by psichedoc on Mon Aug 28 09:45:39 2006</i>
+</center>
+</small>
+</body>
+</html>

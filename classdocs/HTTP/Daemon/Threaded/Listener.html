@@ -1,0 +1,385 @@
+
+<html>
+<head>
+<title>HTTP::Daemon::Threaded::Listener</title>
+</head>
+<body>
+<table width='100%' border=0 CELLPADDING='0' CELLSPACING='3'>
+<TR>
+<TD VALIGN='top' align=left><FONT SIZE='-2'>
+ SUMMARY:&nbsp;<A HREF='#constructor_summary'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_summary'>METHOD</a>
+ </FONT></TD>
+<TD VALIGN='top' align=right><FONT SIZE='-2'>
+DETAIL:&nbsp;<A HREF='#constructor_detail'>CONSTR</a>&nbsp;|&nbsp;<A HREF='#method_detail'>METHOD</a>
+</FONT></TD>
+</TR>
+</table><hr>
+<h2>Class HTTP::Daemon::Threaded::Listener</h2>
+
+<p>
+<dl>
+<dt><b>Inherits from:</b>
+<dd><a href='../../../Thread/Apartment/MuxServer.html'>Thread::Apartment::MuxServer</a></dd>
+<dd><a href='../../../HTTP/Daemon/Threaded/Logable.html'>HTTP::Daemon::Threaded::Logable</a></dd>
+</dt>
+</dl>
+
+<hr>
+
+Web network listener: accepts network connections, and routes
+them to WebClient objects to handle the web requests. Creates and maintains
+a pool of WebClient objects.
+<p>
+A threads::shared array is shared between this object and the WebClient
+objects so that WebClients can return themselves to the free list quickly;
+a future release may convert the freelist to a full object, in the event
+the allocate/free methods require a more complex process.
+<p>
+Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 2.1, as specified in the
+License.txt file included in this software package, or at
+<a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
+
+
+<p>
+
+<dl>
+
+<dt><b>Author:</b></dt>
+	<dd>D. Arnold</dd>
+
+<dt><b>Version:</b></dt>
+	<dd>0.90</dd>
+
+<dt><b>Since:</b></dt>
+	<dd>2006-08-21
+</dd>
+
+<p>
+<i>Unless otherwise noted, <code>$self
+
+</code> is the object instance variable.</i>
+<p>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Constructor Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#HTTP::Daemon::Threaded::Listener'>new</a>(AptTimeout =&gt; <i>value</i>, Port =&gt; <i>value</i>, MaxClients =&gt; <i>value</i>, LogLevel =&gt; <i>value</i>, EventLogger =&gt; <i>value</i>, WebLogger =&gt; <i>value</i>, Handlers =&gt; <i>value</i>, UserAuth =&gt; <i>value</i>, SessionCache =&gt; <i>value</i>, InactivityTimer =&gt; <i>value</i>, ContentParams =&gt; <i>value</i>, DocRoot =&gt; <i>value</i>, ProductTokens =&gt; <i>value</i>, MediaTypes =&gt; <i>value</i>, SelectInterval =&gt; <i>value</i>)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Opens the HTTPD listener socket and creates
+its selector
+</td></tr>
+</table><p>
+
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'><th align=left><font size='+2'>Method Summary</font></th></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#close'>close</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Closes the listen socket and stops all the WebClient
+threads
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getListenInterval'>getListenInterval</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Get IO::Select() interval
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#getSocket'>getSocket</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Return the listener socket
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#get_simplex_methods'>get_simplex_methods</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Overrides Thread::Apartment::Server::get_simplex_methods()
+
+
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#handleSocketError'>handleSocketError</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<B>Deprecated.</B>&nbsp;<i>1
+</i></td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#handleSocketEvent'>handleSocketEvent</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Handle listen socket events
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#run'>run</a>()</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Thread::Apartment::MuxServer::run() implementation
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setListenInterval'>setListenInterval</a>($interval)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set IO::Select() interval
+</td></tr>
+
+<tr><td align=left valign=top>
+<code><a href='#setLogLevel'>setLogLevel</a>($level)</code>
+
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Set log level
+</td></tr>
+</table>
+<p>
+
+<a name='constructor_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Constructor Details</font></th>
+</tr>
+</table>
+
+<a name='new'></a>
+<h3>new</h3>
+<pre>
+new(AptTimeout =&gt; <i>value</i>, Port =&gt; <i>value</i>, MaxClients =&gt; <i>value</i>, LogLevel =&gt; <i>value</i>, EventLogger =&gt; <i>value</i>, WebLogger =&gt; <i>value</i>, Handlers =&gt; <i>value</i>, UserAuth =&gt; <i>value</i>, SessionCache =&gt; <i>value</i>, InactivityTimer =&gt; <i>value</i>, ContentParams =&gt; <i>value</i>, DocRoot =&gt; <i>value</i>, ProductTokens =&gt; <i>value</i>, MediaTypes =&gt; <i>value</i>, SelectInterval =&gt; <i>value</i>)
+</pre><p>
+<dl>
+<dd>Opens the HTTPD listener socket and creates
+its selector. Creates a pool of HTTP::Daemon::Threaded::WebClient
+apartment threaded objects, based on the specified MaxClient
+parameter.
+<p>
+Note that the following parameters are recognized by
+HTTP::Daemon::Threaded and/or HTTP::Daemon::Threaded::WebClient, but
+applications may supply additional parameter key/value pairs
+which will be provided to the constructor for any specified
+HTTP::Daemon::Threaded::ContentParams class.
+
+
+<p>
+<dd><dl>
+<dt><b>Parameters:</b>
+<dd><code>AptTimeout</code> =&gt; <i>(optional)</i> Thread::Apartment proxy return timeout
+</dd>
+<dd><code>Port</code> =&gt; <i>(optional)</i> TCP listen port; default 80.
+</dd>
+<dd><code>MaxClients</code> =&gt; <i>(optional)</i> max number of client handlers to spawn;
+default 5
+</dd>
+<dd><code>LogLevel</code> =&gt; <i>(optional)</i> logging level; 1 => errors only; 2 => errors and warnings only; 3 => errors, warnings,
+and info messages; default 1
+</dd>
+<dd><code>EventLogger</code> =&gt; <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+event notifications (except for web requests)
+</dd>
+<dd><code>WebLogger</code> =&gt; <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+web request notifications
+</dd>
+<dd><code>Handlers</code> =&gt; <i>(required)</i> URI handler map; arrayref mapping URI regex's to handler package names
+</dd>
+<dd><code>UserAuth</code> =&gt; <i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::Auth <i>(not yet supported)</i>
+</dd>
+<dd><code>SessionCache</code> =&gt; <i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::SessionCache
+to be used to create/manage sessions
+</dd>
+<dd><code>InactivityTimer</code> =&gt; <i>(optional)</i> number of seconds a WebClient waits before disconnecting
+an idle connection; default 10 minutes
+</dd>
+<dd><code>ContentParams</code> =&gt; <i>(optional)</i> name of concrete implementation of HTTP::Daemon::Threaded::ContentParams
+</dd>
+<dd><code>DocRoot</code> =&gt; <i>(optional)</i> root directory for default file based content handler
+</dd>
+<dd><code>ProductTokens</code> =&gt; <i>(optional)</i> product token string to return to client; default
+is 'HTTP::Daemon::Threaded/<version>'
+</dd>
+<dd><code>MediaTypes</code> =&gt; <i>(optional)</i> hashref mapping 'Content-Type' specifications to
+file qualifier strings. Values may be either a single string literal, or
+</dd>
+<dd><code>SelectInterval</code> =&gt; <i>(optional)</i> seconds to wait in select()'s on sockets. May be fractional; default 0.5
+
+</dd>
+<dt><b>Returns:</b><dd>HTTP::Daemon::Threaded object
+</dd>
+</dl></dd></dl><hr>
+
+<p>
+
+<a name='method_detail'></a>
+<table border=1 cellpadding=3 cellspacing=0 width='100%'>
+<tr bgcolor='#9800B500EB00'>
+	<th align=left><font size='+2'>Method Details</font></th>
+</tr></table>
+
+<a name='close'></a>
+<h3>close</h3>
+<pre>
+close()
+</pre><p>
+<dl>
+<dd>Closes the listen socket and stops all the WebClient
+threads.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Returns:</b><dd>1
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getListenInterval'></a>
+<h3>getListenInterval</h3>
+<pre>
+getListenInterval()
+</pre><p>
+<dl>
+<dd>Get IO::Select() interval. Called when HTTP::Daemon::Threaded
+config info is requested.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>current listener interval
+</dd>
+</dl></dd></dl><hr>
+
+<a name='getSocket'></a>
+<h3>getSocket</h3>
+<pre>
+getSocket()
+</pre><p>
+<dl>
+<dd>Return the listener socket.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>HTTP::Daemon::Threaded::Socket listen socket object
+</dd>
+</dl></dd></dl><hr>
+
+<a name='get_simplex_methods'></a>
+<h3>get_simplex_methods</h3>
+<pre>
+get_simplex_methods()
+</pre><p>
+<dl>
+<dd>Overrides Thread::Apartment::Server::get_simplex_methods()
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>hashref of simplex method names
+</dd>
+</dl></dd></dl><hr>
+
+<a name='handleSocketError'></a>
+<h3>handleSocketError</h3>
+<pre>
+handleSocketError()
+</pre><p>
+<dl>
+<dd>Handle socket errors.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>undef
+</dd>
+</dl></dd></dl><hr>
+
+<a name='handleSocketEvent'></a>
+<h3>handleSocketEvent</h3>
+<pre>
+handleSocketEvent()
+</pre><p>
+<dl>
+<dd>Handle listen socket events. Accepts a new connection request,
+allocates a WebClient to handle it, and passes the new socket
+to the WebClient
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>1
+</dd>
+</dl></dd></dl><hr>
+
+<a name='run'></a>
+<h3>run</h3>
+<pre>
+run()
+</pre><p>
+<dl>
+<dd>Thread::Apartment::MuxServer::run() implementation.
+
+
+<p>
+<dd><dl>
+<dt><b>Returns:</b><dd>1
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setListenInterval'></a>
+<h3>setListenInterval</h3>
+<pre>
+setListenInterval($interval)
+</pre><p>
+<dl>
+<dd>Set IO::Select() interval. Called when
+HTTP::Daemon::Threaded select interval is updated.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$interval</code> - new interval; fractional number of seconds
+
+</dd>
+<dt><b>Returns:</b><dd>1
+</dd>
+</dl></dd></dl><hr>
+
+<a name='setLogLevel'></a>
+<h3>setLogLevel</h3>
+<pre>
+setLogLevel($level)
+</pre><p>
+<dl>
+<dd>Set log level. Called from WebClient when loglevel
+update is requested.
+
+
+<p>
+<dd><dl>
+<dt><b>Simplex</b></dt>
+<dt><b>Parameters:</b>
+<dd><code>$level</code> - new log level
+
+</dd>
+<dt><b>Returns:</b><dd>1
+</dd>
+</dl></dd></dl><hr>
+
+<small>
+<center>
+<i>Generated by psichedoc on Mon Aug 28 09:45:39 2006</i>
+</center>
+</small>
+</body>
+</html>
