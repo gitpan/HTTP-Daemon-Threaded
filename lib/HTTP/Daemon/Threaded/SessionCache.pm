@@ -1,30 +1,36 @@
-#/**
-#
-# Abstract base class for SessionCache classes.
-# Provides an interface definition for
-# caching session context in a threads::shared container.
-# Provides a default implementation to create non-persistent
-# sessions. Also acts as a factory for Session objects.
-# <p>
-# <b>Note:</b> Applications needing to provide their own
-# session class implementations should subclass this class instead, and
-# provide an instance of the subclass as the HTTP::Daemon::Threaded
-# constructor's SessionCache parameter. Such subclass instances may then
-# manufacture session objects using their own Session
-# subclass.
-# <p>
-# Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
-# All rights reserved.
-# <p>
-# Licensed under the Academic Free License version 2.1, as specified in the
-# License.txt file included in this software package, or at
-# <a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
-#
-# @author D. Arnold
-# @since 2006-08-21
-# @self	$self
-#
-#*/
+=pod
+
+=begin classdoc
+
+
+Abstract base class for SessionCache classes.
+Provides an interface definition for
+caching session context in a threads::shared container.
+Provides a default implementation to create non-persistent
+sessions. Also acts as a factory for Session objects.
+<p>
+<b>Note:</b> Applications needing to provide their own
+session class implementations should subclass this class instead, and
+provide an instance of the subclass as the HTTP::Daemon::Threaded
+constructor's SessionCache parameter. Such subclass instances may then
+manufacture session objects using their own Session
+subclass.
+<p>
+Copyright&copy 2006-2008, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 3.0, as specified at
+<a href='http://www.opensource.org/licenses/afl-3.0.php'>OpenSource.org</a>.
+
+@author D. Arnold
+@since 2006-08-21
+@self	$self
+
+
+
+=end classdoc
+
+=cut
 package HTTP::Daemon::Threaded::SessionCache;
 
 use threads;
@@ -34,16 +40,23 @@ use HTTP::Daemon::Threaded::Session;
 use strict;
 use warnings;
 
-our $VERSION = '0.90';
-#/**
-# Constructor. Creates threads::shared object to contain
-# any Session object that will be created.
-# <p>
-# Subclasses should extend this to open any session storage,
-# and possible pre-cache session contexts.
-#
-# @return		HTTP::Daemon::Threaded::SessionCache object
-#*/
+our $VERSION = '0.91';
+=pod
+
+=begin classdoc
+
+Constructor. Creates threads::shared object to contain
+any Session object that will be created.
+<p>
+Subclasses should extend this to open any session storage,
+and possible pre-cache session contexts.
+
+@return		HTTP::Daemon::Threaded::SessionCache object
+
+
+=end classdoc
+
+=cut
 
 sub new {
 	my $class = shift;
@@ -54,12 +67,19 @@ sub new {
 	return bless \%self, $class;
 }
 
-#/**
-# Add a new session to the cache.
-#
-# @param $session	HTTP::Daemon::Threaded::Session object
-# @return		the HTTP::Daemon::Threaded::Session object
-#*/
+=pod
+
+=begin classdoc
+
+Add a new session to the cache.
+
+@param $session	HTTP::Daemon::Threaded::Session object
+@return		the HTTP::Daemon::Threaded::Session object
+
+
+=end classdoc
+
+=cut
 sub addSession {
 	my ($self, $session) = @_;
 
@@ -69,12 +89,19 @@ sub addSession {
 	return $session;
 }
 
-#/**
-# Remove a session from the cache.
-#
-# @param $id	unique ID of session to be removed
-# @return		the HTTP::Daemon::Threaded::SessionCache object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a session from the cache.
+
+@param $id	unique ID of session to be removed
+@return		the HTTP::Daemon::Threaded::SessionCache object
+
+
+=end classdoc
+
+=cut
 sub removeSession {
 	my ($self, $id) = @_;
 	my $cache = $self->{_cache};
@@ -82,12 +109,19 @@ sub removeSession {
 	return $self;
 }
 
-#/**
-# Get a session from the cache.
-#
-# @param $request	HTTP::Request object for which a session is to be located
-# @return		the HTTP::Daemon::Threaded::Session object if it exists; undef otherwise
-#*/
+=pod
+
+=begin classdoc
+
+Get a session from the cache.
+
+@param $request	HTTP::Request object for which a session is to be located
+@return		the HTTP::Daemon::Threaded::Session object if it exists; undef otherwise
+
+
+=end classdoc
+
+=cut
 sub getSession {
 	my ($self, $request) = @_;
 
@@ -117,21 +151,28 @@ sub getSession {
 	return $session ? $session->setLastAccessedTime() : undef;
 }
 
-#/**
-# Create a new session and store in the cache.
-#
-# @param $id	<i>(optional)</i> unique ID of session to retrieve; default is whatever
-#				the session object class generates
-# @param $timeout	<i>(optional)</i> max inactivity timeout; default is class specific
-# @param $dough		<i>(optional)</i> any information to be included in the session's cookie;
-#					the $id will be prepended to this information
-# @param $expires	<i>(optional)</i> RFC1123 formatted cookie expiration date string, or
-#					'Never'; default is single session (nonpersistent)
-#
-# @return		undef if a session with the same ID already exists, or if the
-#				session object cannot be created; otherwise,
-#				the created HTTP::Daemon::Threaded::Session object
-#*/
+=pod
+
+=begin classdoc
+
+Create a new session and store in the cache.
+
+@param $id	<i>(optional)</i> unique ID of session to retrieve; default is whatever
+the session object class generates
+@param $timeout	<i>(optional)</i> max inactivity timeout; default is class specific
+@param $dough		<i>(optional)</i> any information to be included in the session's cookie;
+the $id will be prepended to this information
+@param $expires	<i>(optional)</i> RFC1123 formatted cookie expiration date string, or
+'Never'; default is single session (nonpersistent)
+
+@return		undef if a session with the same ID already exists, or if the
+session object cannot be created; otherwise,
+the created HTTP::Daemon::Threaded::Session object
+
+
+=end classdoc
+
+=cut
 sub createSession {
 	my $self = shift;
 	my $id = shift;
@@ -148,15 +189,22 @@ sub createSession {
 	return $session;
 }
 
-#/**
-# Recover an existing session from persistent storage.
-#
-# @param $cookie <i>(required)</i> HTTP Cookie header containing unique ID of
-#				session to retrieve
-#
-# @return		undef if the session object cannot be recovered; otherwise,
-#				the HTTP::Daemon::Threaded::Session object
-#*/
+=pod
+
+=begin classdoc
+
+Recover an existing session from persistent storage.
+
+@param $cookie <i>(required)</i> HTTP Cookie header containing unique ID of
+session to retrieve
+
+@return		undef if the session object cannot be recovered; otherwise,
+the HTTP::Daemon::Threaded::Session object
+
+
+=end classdoc
+
+=cut
 sub openSession {
 	my ($self, $cookie) = @_;
 

@@ -21,7 +21,7 @@ my $forkhttpd = 1;
 #	platforms hang onto the listener port for extended periods
 #	after we've closed it
 #
-my $port = 10876;
+my $port = 12876;
 my $result = 0;
 my $cycles = 20;
 my $quiet = 1;
@@ -55,7 +55,7 @@ if ($forkhttpd) {
 	die "Can't fork HTTP Client child: $!" unless defined $child1;
 
 	unless ($child1) {
-		my $cmd = 'perl -w t' . $sep . "httpdtest.pl -p $port -c 5 -d ./t -l 1 -s";
+		my $cmd = 'perl -w t' . $sep . "cgidtest.pl -p $port -c 5 -d ./t -l 1 -s";
 		system($cmd);
 		exit 1;
 	}
@@ -111,7 +111,7 @@ sub run {
 
 	($ct, $cl, $mtime, $exp, $server) = head($url . 'index.html');
 	return 0
-		unless (defined($ct) && ($ct eq 'text/html') && defined($cl) && ($cl == $indexlen));
+		unless (defined($ct) && ($ct eq 'text/html'));
 #
 #	2. simple GET
 #
@@ -140,17 +140,27 @@ sub run {
 	print STDERR "CGI HEAD\n"
 		unless $quiet;
 
-	my $postpg =
-'<html><body>
+my $postpg = <<'EOPAGE';
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+<head>
+<title>Untitled Document</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
 that is other<br>
 this is some<br>
 when is right this minute<br>
 where is up<br>
-</body></html>';
+
+</body>
+</html>
+EOPAGE
 
 	($ct, $cl, $mtime, $exp, $server) = head($url . 'posted?this=some&that=other&where=up&when=right%20this%20minute');
-	return 0 unless (defined($ct) && ($ct eq 'text/html'));
-
+	return 0 unless (defined($ct) && ($ct eq 'text/html; charset=UTF-8'));
 #
 #	5. document GET
 #

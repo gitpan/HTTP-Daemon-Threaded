@@ -1,22 +1,28 @@
-#/**
-#
-# Provides a configurable I/O selector that permits
-# distinguishing between read, write, and exception
-# selectors. Used within the HTTP::Daemon::Threaded::Socket object
-# to simplify the process of managing events on I/O handles.
-# <p>
-# Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
-# All rights reserved.
-# <p>
-# Licensed under the Academic Free License version 2.1, as specified in the
-# License.txt file included in this software package, or at
-# <a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
-#
-# @author D. Arnold
-# @since 2005-12-01
-# @self	$_[0]
-#
-#*/
+=pod
+
+=begin classdoc
+
+
+Provides a configurable I/O selector that permits
+distinguishing between read, write, and exception
+selectors. Used within the HTTP::Daemon::Threaded::Socket object
+to simplify the process of managing events on I/O handles.
+<p>
+Copyright&copy 2006-2008, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 3.0, as specified at
+<a href='http://www.opensource.org/licenses/afl-3.0.php'>OpenSource.org</a>.
+
+@author D. Arnold
+@since 2005-12-01
+@self	$_[0]
+
+
+
+=end classdoc
+
+=cut
 package HTTP::Daemon::Threaded::IOSelector;
 
 use IO::Select;
@@ -25,18 +31,25 @@ use Time::HiRes qw(time);
 use strict;
 use warnings;
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 
 use constant HTTPD_SELECT_RD => 1;
 use constant HTTPD_SELECT_WR => 2;
 use constant HTTPD_SELECT_EX => 4;
 
-#/**
-# Constructor. Creates separate read, write, and exception
-# IO::Select objects.
-#
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Constructor. Creates separate read, write, and exception
+IO::Select objects.
+
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub new {
 	my ($class, $interval) = @_;
 #
@@ -50,57 +63,92 @@ sub new {
 	return bless [ $readsel, $writesel, $exceptsel, $interval ], $class;
 }
 
-#/**
-# Add a HTTP::Daemon::Threaded::Socket object to the read selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Add a HTTP::Daemon::Threaded::Socket object to the read selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub addRead {
 	$_[0]->[0]->add($_[1]);
 	return $_[0];
 }
 
-#/**
-# Add a HTTP::Daemon::Threaded::Socket object to the write selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Add a HTTP::Daemon::Threaded::Socket object to the write selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub addWrite {
 	$_[0]->[1]->add($_[1]);
 	return $_[0];
 }
 
-#/**
-# Add a HTTP::Daemon::Threaded::Socket object to the exception selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Add a HTTP::Daemon::Threaded::Socket object to the exception selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub addExcept {
 	$_[0]->[2]->add($_[1]);
 	return $_[0];
 }
 
-#/**
-# Add a HTTP::Daemon::Threaded::Socket object to the read and exception selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Add a HTTP::Daemon::Threaded::Socket object to the read and exception selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub addNoWrite {
 	$_[0]->[0]->add($_[1]);
 	$_[0]->[2]->add($_[1]);
 	return $_[0];
 }
 
-#/**
-# Add a HTTP::Daemon::Threaded::Socket object to the all selectors.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Add a HTTP::Daemon::Threaded::Socket object to the all selectors.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub addAll {
 	$_[0]->[0]->add($_[1]);
 	$_[0]->[1]->add($_[1]);
@@ -108,57 +156,92 @@ sub addAll {
 	return $_[0];
 }
 
-#/**
-# Remove a HTTP::Daemon::Threaded::Socket object from the read selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a HTTP::Daemon::Threaded::Socket object from the read selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub removeRead {
 	$_[0]->[0]->remove($_[1]);
 	return $_[0];
 }
 
-#/**
-# Remove a HTTP::Daemon::Threaded::Socket object from the write selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a HTTP::Daemon::Threaded::Socket object from the write selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub removeWrite {
 	$_[0]->[1]->remove($_[1]);
 	return $_[0];
 }
 
-#/**
-# Remove a HTTP::Daemon::Threaded::Socket object from the exception selector.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a HTTP::Daemon::Threaded::Socket object from the exception selector.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub removeExcept {
 	$_[0]->[2]->remove($_[1]);
 	return $_[0];
 }
 
-#/**
-# Remove a HTTP::Daemon::Threaded::Socket object from the read and exception selectors.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a HTTP::Daemon::Threaded::Socket object from the read and exception selectors.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub removeNoWrite {
 	$_[0]->[0]->remove($_[1]);
 	$_[0]->[2]->remove($_[1]);
 	return $_[0];
 }
 
-#/**
-# Remove a HTTP::Daemon::Threaded::Socket object from all the selectors.
-#
-# @param $fd	a HTTP::Daemon::Threaded::Socket
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Remove a HTTP::Daemon::Threaded::Socket object from all the selectors.
+
+@param $fd	a HTTP::Daemon::Threaded::Socket
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub removeAll {
 
 #	my @frame = caller(1);
@@ -172,59 +255,108 @@ sub removeAll {
 	return $_[0];
 }
 
-#/**
-# Return the read selector.
-#
-# @return		IO::Select object
-#*/
+=pod
+
+=begin classdoc
+
+Return the read selector.
+
+@return		IO::Select object
+
+
+=end classdoc
+
+=cut
 sub getRead { return $_[0]->[0]; }
 
-#/**
-# Return the write selector.
-#
-# @return		IO::Select object
-#*/
+=pod
+
+=begin classdoc
+
+Return the write selector.
+
+@return		IO::Select object
+
+
+=end classdoc
+
+=cut
 sub getWrite { return $_[0]->[1]; }
 
-#/**
-# Return the exception selector.
-#
-# @return		IO::Select object
-#*/
+=pod
+
+=begin classdoc
+
+Return the exception selector.
+
+@return		IO::Select object
+
+
+=end classdoc
+
+=cut
 sub getExcept { return $_[0]->[2]; }
 
-#/**
-# Return all selectors.
-#
-# @returnlist		read, write, exception IO::Select objects
-#*/
+=pod
+
+=begin classdoc
+
+Return all selectors.
+
+@returnlist		read, write, exception IO::Select objects
+
+
+=end classdoc
+
+=cut
 sub getAll { return ( @{$_[0]} ); }
 
-#/**
-# Set the select() timeout
-#
-# @param $timeout	number of seconds to select()
-# @return		HTTP::Daemon::Threaded::IOSelector object
-#*/
+=pod
+
+=begin classdoc
+
+Set the select() timeout
+
+@param $timeout	number of seconds to select()
+@return		HTTP::Daemon::Threaded::IOSelector object
+
+
+=end classdoc
+
+=cut
 sub setTimeout { $_[0]->[3] = $_[1]; return $_[0]; }
 
-#/**
-# Return the current select() timeout value
-#
-# @return		timeout value
-#*/
+=pod
+
+=begin classdoc
+
+Return the current select() timeout value
+
+@return		timeout value
+
+
+=end classdoc
+
+=cut
 sub getTimeout { return $_[0]->[3] = $_[1]; }
 
-#/**
-# Wait up to the configured timeout for an event on any of
-# the HTTP::Daemon::Threaded::Socket objects installed in any of the read, write,
-# or exception IO::Select objects. When events are detected,
-# the handleSocketEvent() method on the HTTP::Daemon::Threaded::Socket object
-# is called, with a bit mask indicating which of the events was
-# detected.
-#
-# @return		elapsed time in the function, in seconds
-#*/
+=pod
+
+=begin classdoc
+
+Wait up to the configured timeout for an event on any of
+the HTTP::Daemon::Threaded::Socket objects installed in any of the read, write,
+or exception IO::Select objects. When events are detected,
+the handleSocketEvent() method on the HTTP::Daemon::Threaded::Socket object
+is called, with a bit mask indicating which of the events was
+detected.
+
+@return		elapsed time in the function, in seconds
+
+
+=end classdoc
+
+=cut
 sub select {
 	my $obj = shift;
 

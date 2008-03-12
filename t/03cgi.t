@@ -23,7 +23,7 @@ unless ($ARGV[0]) {
 die "Can't fork HTTP Client child: $!" unless defined $child1;
 
 unless ($child1) {
-	my $cmd = 'perl -w t' . $sep . 'httpdtest.pl -p 9876 -c 5 -d ./t -l 1 -s';
+	my $cmd = 'perl -w t' . $sep . 'cgidtest.pl -p 11876 -c 5 -d ./t -l 1 -s';
 	system($cmd);
 	exit 1;
 }
@@ -42,13 +42,13 @@ my ($ct, $cl, $mtime, $exp, $server);
 #
 my $indexlen = length($index);	# change this!
 
-($ct, $cl, $mtime, $exp, $server) = head('http://localhost:9876/index.html');
+($ct, $cl, $mtime, $exp, $server) = head('http://localhost:11876/index.html');
 ok((defined($ct) && ($ct eq 'text/html') &&
 	defined($cl) && ($cl == $indexlen)), 'simple HEAD');
 #
 #	2. simple GET
 #
-my $page = get 'http://localhost:9876';
+my $page = get 'http://localhost:11876';
 ok((defined($page) && ($page eq $index)), 'simple GET');
 #
 #	3. document HEAD
@@ -58,39 +58,50 @@ my $jspage = '/*
 */
 ';
 
-($ct, $cl, $mtime, $exp, $server) = head('http://localhost:9876/scripty.js');
+($ct, $cl, $mtime, $exp, $server) = head('http://localhost:11876/scripty.js');
 ok((defined($ct) && ($ct eq 'text/javascript') &&
 	defined($cl) && (($cl == crlen($jspage)) || ($cl == length($jspage)))),
 	'document HEAD');
 #
 #	4. CGI HEAD
 #
-my $postpg = '<html><body>
+my $postpg = <<'EOPAGE';
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+<head>
+<title>Untitled Document</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
 that is other<br>
 this is some<br>
 when is right this minute<br>
 where is up<br>
-</body></html>';
 
-($ct, $cl, $mtime, $exp, $server) = head('http://localhost:9876/posted?this=some&that=other&where=up&when=right%20this%20minute');
-ok((defined($ct) && ($ct eq 'text/html') &&
-	defined($cl) && (($cl == crlen($postpg)) || ($cl == length($postpg)))),
-	'document HEAD');
-#
+</body>
+</html>
+EOPAGE
+
+($ct, $cl, $mtime, $exp, $server) = head('http://localhost:11876/posted?this=some&that=other&where=up&when=right%20this%20minute');
+#print STDERR "head returns ", join(",", $ct, $mtime, $exp, $server), "\n";
+ok((defined($ct) && ($ct eq 'text/html; charset=UTF-8')),	'document HEAD');
+
 #	5. document GET
 #
-$page = get 'http://localhost:9876/scripty.js';
+$page = get 'http://localhost:11876/scripty.js';
 ok((defined($page) && (!crcmp($page, $jspage))), 'document GET');
 #
 #	6. CGI GET
 #
-$page = get 'http://localhost:9876/posted?this=some&that=other&where=up&when=right%20this%20minute';
+$page = get 'http://localhost:11876/posted?this=some&that=other&where=up&when=right%20this%20minute';
 ok((defined($page) && (!crcmp($page, $postpg))), 'CGI GET');
 #
 #	7. multidoc GET
 #
 my %multidoc = (
-'http://localhost:9876/frames.html',
+'http://localhost:11876/frames.html',
 "<html>
 <head><title>Test Content Handler</title>
 </head>
@@ -108,14 +119,14 @@ my %multidoc = (
 </html>
 ",
 
-'http://localhost:9876/stackpane.html',
+'http://localhost:11876/stackpane.html',
 '<html>
 <body>
 Some other stuff goes here...
 </body>
 </html>
 ',
-'http://localhost:9876/sourcepane.html',
+'http://localhost:11876/sourcepane.html',
 '<html>
 <body>
 <center><h2>Here\'s a frame</h2></center>
@@ -123,7 +134,7 @@ Some other stuff goes here...
 </html>
 ',
 
-'http://localhost:9876/sourcetree.html',
+'http://localhost:11876/sourcetree.html',
 '<html>
 <head>
 <style type="text/css">
@@ -157,7 +168,7 @@ a {
 
 );
 
-my $fetched = LWPBulkFetch->new('http://localhost:9876/frames.html');
+my $fetched = LWPBulkFetch->new('http://localhost:11876/frames.html');
 my $url;
 if ($fetched) {
 	my $ok = 1;
@@ -176,7 +187,7 @@ else {
 #
 my $ua = LWP::UserAgent->new();
 
-$page = $ua->post('http://localhost:9876/posted',
+$page = $ua->post('http://localhost:11876/posted',
 	{ this => 'some', that => 'other', where => 'up', when => 'right this minute'});
 unless (defined $page) {
 	fail('simple POST');
@@ -195,7 +206,7 @@ my $xml =
 </first>
 ';
 
-my $r = HTTP::Request->new( POST => 'http://localhost:9876/postxml' );
+my $r = HTTP::Request->new( POST => 'http://localhost:11876/postxml' );
 $r->content( $xml );
 $r->header('Content-type' => 'text/xml');
 
@@ -211,7 +222,7 @@ SKIP:
 	skip 'Not ready for PUT yet...', 1;
 }
 
-get 'http://localhost:9876/stop';
+get 'http://localhost:11876/stop';
 
 unless ($ARGV[0]) {
 kill($child1);

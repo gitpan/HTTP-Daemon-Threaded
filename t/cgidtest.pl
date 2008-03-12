@@ -6,15 +6,13 @@ use threads;
 use threads::shared;
 use HTTP::Daemon::Threaded;
 use HTTP::Daemon::Threaded::Listener;
-use HTTP::Daemon::Threaded::Content;
-use HTTP::Daemon::Threaded::ContentParams;
+use HTTP::Daemon::Threaded::CGIHandler;
 use HTTP::Daemon::Threaded::SessionCache;
 use HTTP::Daemon::Threaded::Logger;
 use HTTP::Daemon::Threaded::WebClient;
-use ContentParams;
 use MyWebLogger;
 use TestHTML;
-use TestHTTPReq;
+use TestCGI;
 
 use strict;
 use warnings;
@@ -59,7 +57,6 @@ while (@ARGV) {
 		if ($op eq '-w');
 }
 
-my $contparams = ContentParams->new();
 my $sessions = $useSess ? HTTP::Daemon::Threaded::SessionCache->new() : undef;
 $weblog = Thread::Apartment->new(
 	AptClass => 'MyWebLogger'
@@ -70,7 +67,6 @@ my $httpd = HTTP::Daemon::Threaded->new(
 	AptTimeout => 100,
 	Port => $port,
 	MaxClients => $maxclients,
-	ContentParams => $contparams,
 	SessionCache => $sessions,
 	LogLevel => $loglevel,
 	DocRoot => $docroot,
@@ -99,9 +95,8 @@ my $httpd = HTTP::Daemon::Threaded->new(
 	#
 	Handlers => [
 		'^/\w+\.html$', 'TestHTML',
-		'^/posted$', 'TestHTTPReq',
-		'^/postxml$', 'TestHTTPReq',
-#		'^.*\.(jpeg|gif|png|jpg)$', $iconsModule,
+		'^/posted$', 'TestCGI',
+		'^/postxml$', 'TestCGI',
 		'^.*/scripty\.js$', '*',
 	],
 	#

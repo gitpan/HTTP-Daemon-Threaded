@@ -9,7 +9,7 @@ HTTP::Daemon::Threaded - Apartment threaded HTTP::Daemon-based server
 	#
 	# create content handler class
 	#
-	package TestCGI;
+	package TestHTTPReq;
 
 	use HTTP::Date qw(time2str);
 	use HTTP::Response;
@@ -104,6 +104,76 @@ HTTP::Daemon::Threaded - Apartment threaded HTTP::Daemon-based server
 
 	...implementation goes here...
 	#
+	# create CGI based content handler class
+	#
+	package TestCGI;
+
+	use HTTP::Date qw(time2str);
+	use HTTP::Response;
+	use HTTP::Daemon::Threaded::CGIHandler;
+	use base ('HTTP::Daemon::Threaded::CGIHandler');
+
+	use strict;
+	use warnings;
+
+	sub new {
+		my $class = shift;
+		return $class->SUPER::new(@_);	# use default constructor
+	}
+
+	sub handleCGI {
+		my ($self, $cgi, $session) = @_;
+
+		return $fd->send_error(404)
+			unless (($uri eq 'posted') || ($uri eq 'postxml'));
+
+		my $html = '<html><body>';
+		my $ct = 'text/html';
+		if ($uri eq 'posted') {
+			$html .= "$_ is $$params{$_}<br>\n"
+				foreach (sort keys %$params);
+			$html .= "</body></html>\n";
+		}
+		else {
+			$ct = 'text/xml';
+			$html = $params;	# reflect the content
+		}
+		my $res = HTTP::Response->new(200, 'OK',
+			[ 'Content-Type' => $ct,
+				'Content-Length' => length($html),
+				'Last-Modified' => time2str(time())
+			]);
+		$res->request($req);
+		$res->content($html);
+		return $fd->send_response($res);
+	}
+
+	sub getHeader {
+		my ($self, $fd, $request, $uri, $params, $session) = @_;
+
+		return $fd->send_error(404)
+			unless (($uri eq 'posted') || ($uri eq 'postxml'));
+
+		my $html = '<html><body>';
+		my $ct = 'text/html';
+		if ($uri eq 'posted') {
+			$html .= "$_ is $$params{$_}<br>\n"
+				foreach (sort keys %$params);
+			$html .= "</body></html>\n";
+		}
+		else {
+			$ct = 'text/xml';
+			$html = $params;	# its the content
+		}
+		my $res = HTTP::Response->new(200, 'OK',
+			[ 'Content-Type' => $ct,
+				'Content-Length' => length($html),
+				'Last-Modified' => $mtime
+			]);
+		$res->request($req);
+		return $fd->send_response($res);
+	}
+	#
 	#	now fire up a server
 	#
 	package main;
@@ -139,8 +209,8 @@ HTTP::Daemon::Threaded - Apartment threaded HTTP::Daemon-based server
 		WebLogger		=> $weblog,
 		DocRoot			=> './',	# root directory for default file handler
 		Handlers		=> [
-			'^\/posted$', 'TestCGI',
-			'^\/postxml$', 'TestCGI',
+			'^\/posted$', 'TestCGI',		# uses CGI
+			'^\/postxml$', 'TestHTTPReq',	# uses HTTP::Request/Response directly
 			'^.*\/scripty\.js$', '*',	# default file handler
 			'^.*\/\w+\.html$', '*',		# default file handler
 		],
@@ -179,7 +249,8 @@ for non-web-server applications, etc.
 
 =head1 METHODS
 
-Refer to the included classdocs for detailed method descriptions for all classes.
+Refer to the classdocs at L<http://www.presicient.com/httpdthrd> for
+detailed method descriptions for all classes.
 
 =head1 THEORY OF OPERATION
 
@@ -243,10 +314,12 @@ a content handler map, HTTP::Daemon::Threaded::ContentParams instance,
 and a HTTP::Daemon::Threaded::SessionCache instance.
 
 The content handler map is an array of pairs of regular expression strings
-and HTTP::Daemon::Threaded::Content classes that are used to select a
+and HTTP::Daemon::Threaded::Content or HTTP::Daemon::Threaded::CGIHandler
+classes that are used to select a
 content handler object for a given client request URI. The regular expressions
 are evaluated against the URI in sequential order, and, if a match occurs,
-one of the content handler's C<getContent(), getHeader(), or putContent()> methods
+one of the content handler's C<getContent(), getHeader(), putContent()> I<(for HDT::Content
+subclasses)>, or C<handleCGI()> I<(for HDT::CGIHandler subclasses)> methods
 is called to process the request. I<Note> that the regular expressions strings
 must be provided as true string literals, B<not> as "qr//" compiled expressions,
 as the L<Thread::Apartment> method of marshalling the handler map to WebClient
@@ -255,12 +328,26 @@ not yet properly handle thawing regular expression values (except by using the
 L<Regexp::Storable> package, which Thread::Apartment's default marshalling does
 not yet support).
 
+Static file based content may be served using the special classname B<'*'>, which indicates
+the request should be handled by WebClient's default content handler, which
+uses the configured DocRoot property to locate the URI as a file and return it.
+
+Two types of dynamic content handlers are supported: the L<HTTP::Request>/L<HTTP::Response>
+based HTTP::Daemon::Threaded::Content class, and the CGI based
+HTTP::Daemon::Threaded::CGIHandler class.
+
 HTTP::Daemon::Threaded::Content is a simple abstract class with a default
 implementation that returns a 404 HTTP status for any request.
 Applications are expected to implement subclasses of the Content class for the
-various URIs. One exception is the special classname B<'*'>, which indicates
-the request should be handled by WebClient's default content handler, which
-uses the configured DocRoot property to locate the URI as a file and return it.
+various URIs.
+
+HTTP::Daemon::Threaded::CGIHandler is also a simple abstract class with a default
+implementation that returns a 404 HTTP status for any request.
+Note that applications wishing to use the CGI interface B<must>
+subclass HDT::CGIHandler in order for HDT::WebClient to perform the needed CGI
+environment setup prior to invoking the handler's C<handleCGI()> method.
+Also note that legacy CGI implementations which explicity C<exit()> will need
+to be modified to C<return> instead (much like FastCGI).
 
 Content handler classes should avoid maintaining state; any content-related
 state should be managed with the installed ContentParams object, and any session related
@@ -287,7 +374,19 @@ content is collected.
 
 The URI is successively applied to the content handler map regular expressions until
 a match is found. If no match is found, a 404 HTTP status is returned to the client.
-Otherwise, the client connection object, URI, request object, URI parameters,
+
+=item *
+
+If the matching handler object implements HDT::CGIHandler, a CGI environment
+and L<CGI> object are constructed, and STDIN/STDOUT/STDERR are rerouted to
+scalar buffers (via PerlIO C<:scalar> layer, before the handlers'
+C<handleCGI()> method is called. On return, the scalar buffers are used
+to generate the response and send it to the client.
+
+=item *
+
+If the matching handler object implements HDT::Content, the client connection
+object, URI, request object, URI parameters,
 and the session object (if any) are passed to the content handler,
 which is responsible for producing the content into an HTTP::Response object
 and sending it back to the client.
@@ -305,6 +404,9 @@ itself to the free pool.
 L<Thread::Apartment>
 
 L<HTTP::Daemon>
+
+L<HTTP::Request::AsCGI> was used as a reference for implementing CGI
+support.
 
 =head1 TO DO
 
@@ -338,8 +440,7 @@ connection and statement pools
 
 =head1 AUTHOR, COPYRIGHT, AND LICENSE
 
-Copyright(C) 2006, Dean Arnold, Presicient Corp., USA. All rights reserved.
+Copyright(C) 2006-2008, Dean Arnold, Presicient Corp., USA. All rights reserved.
 
-Licensed under the Academic Free License version 2.1, as specified in the
-License.txt file included in this software package, or at OpenSource.org
-L<http://www.opensource.org/licenses/afl-2.1.php>.
+Licensed under the Academic Free License version 3.0, as at OpenSource.org
+L<http://www.opensource.org/licenses/afl-3.0.php>.

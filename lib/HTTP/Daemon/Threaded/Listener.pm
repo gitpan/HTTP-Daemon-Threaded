@@ -1,25 +1,31 @@
-#/**
-# Web network listener: accepts network connections, and routes
-# them to WebClient objects to handle the web requests. Creates and maintains
-# a pool of WebClient objects.
-#<p>
-# A threads::shared array is shared between this object and the WebClient
-# objects so that WebClients can return themselves to the free list quickly;
-# a future release may convert the freelist to a full object, in the event
-# the allocate/free methods require a more complex process.
-# <p>
-# Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
-# All rights reserved.
-# <p>
-# Licensed under the Academic Free License version 2.1, as specified in the
-# License.txt file included in this software package, or at
-# <a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
-#
-# @author D. Arnold
-# @since 2006-08-21
-# @self	$self
-#
-#*/
+=pod
+
+=begin classdoc
+
+Web network listener: accepts network connections, and routes
+them to WebClient objects to handle the web requests. Creates and maintains
+a pool of WebClient objects.
+<p>
+A threads::shared array is shared between this object and the WebClient
+objects so that WebClients can return themselves to the free list quickly;
+a future release may convert the freelist to a full object, in the event
+the allocate/free methods require a more complex process.
+<p>
+Copyright&copy 2006-2008, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 3.0, as specified in the
+at <a href='http://www.opensource.org/licenses/afl-3.0.php'>OpenSource.org</a>.
+
+@author D. Arnold
+@since 2006-08-21
+@self	$self
+
+
+
+=end classdoc
+
+=cut
 package HTTP::Daemon::Threaded::Listener;
 
 use Socket;
@@ -37,48 +43,55 @@ use base qw(HTTP::Daemon::Threaded::Logable Thread::Apartment::MuxServer);
 use strict;
 use warnings;
 
-our $VERSION = '0.90';
+our $VERSION = '0.91';
 
 use constant HTTPD_INTERVAL => 0.5;
 
-#/**
-# Constructor. Opens the HTTPD listener socket and creates
-# its selector. Creates a pool of HTTP::Daemon::Threaded::WebClient
-# apartment threaded objects, based on the specified MaxClient
-# parameter.
-# <p>
-# Note that the following parameters are recognized by
-# HTTP::Daemon::Threaded and/or HTTP::Daemon::Threaded::WebClient, but
-# applications may supply additional parameter key/value pairs
-# which will be provided to the constructor for any specified
-# HTTP::Daemon::Threaded::ContentParams class.
-#
-# @param AptTimeout		<i>(optional)</i> Thread::Apartment proxy return timeout
-# @param Port			<i>(optional)</i> TCP listen port; default 80.
-# @param MaxClients		<i>(optional)</i> max number of client handlers to spawn;
-#						default 5
-# @param LogLevel		<i>(optional)</i> logging level; 1 => errors only; 2 => errors and warnings only; 3 => errors, warnings,
-#						and info messages; default 1
-# @param EventLogger <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
-#					event notifications (except for web requests)
-# @param WebLogger	<i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
-#					web request notifications
-# @param Handlers		<i>(required)</i> URI handler map; arrayref mapping URI regex's to handler package names
-# @param UserAuth		<i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::Auth <i>(not yet supported)</i>
-# @param SessionCache	<i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::SessionCache
-#						to be used to create/manage sessions
-# @param InactivityTimer <i>(optional)</i> number of seconds a WebClient waits before disconnecting
-#						an idle connection; default 10 minutes
-# @param ContentParams  <i>(optional)</i> name of concrete implementation of HTTP::Daemon::Threaded::ContentParams
-# @param DocRoot		<i>(optional)</i> root directory for default file based content handler
-# @param ProductTokens	<i>(optional)</i> product token string to return to client; default
-#						is 'HTTP::Daemon::Threaded/<version>'
-# @param MediaTypes		<i>(optional)</i> hashref mapping 'Content-Type' specifications to
-#						file qualifier strings. Values may be either a single string literal, or
-# @param SelectInterval	<i>(optional)</i> seconds to wait in select()'s on sockets. May be fractional; default 0.5
-#
-# @return		HTTP::Daemon::Threaded object
-#*/
+=pod
+
+=begin classdoc
+
+Constructor. Opens the HTTPD listener socket and creates
+its selector. Creates a pool of HTTP::Daemon::Threaded::WebClient
+apartment threaded objects, based on the specified MaxClient
+parameter.
+<p>
+Note that the following parameters are recognized by
+HTTP::Daemon::Threaded and/or HTTP::Daemon::Threaded::WebClient, but
+applications may supply additional parameter key/value pairs
+which will be provided to the constructor for any specified
+HTTP::Daemon::Threaded::ContentParams class.
+
+@param AptTimeout		<i>(optional)</i> Thread::Apartment proxy return timeout
+@param Port			<i>(optional)</i> TCP listen port; default 80.
+@param MaxClients		<i>(optional)</i> max number of client handlers to spawn;
+default 5
+@param LogLevel		<i>(optional)</i> logging level; 1 => errors only; 2 => errors and warnings only; 3 => errors, warnings,
+and info messages; default 1
+@param EventLogger <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+event notifications (except for web requests)
+@param WebLogger	<i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+web request notifications
+@param Handlers		<i>(required)</i> URI handler map; arrayref mapping URI regex's to handler package names
+@param UserAuth		<i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::Auth <i>(not yet supported)</i>
+@param SessionCache	<i>(optional)</i> instance of a subclass of HTTP::Daemon::Threaded::SessionCache
+to be used to create/manage sessions
+@param InactivityTimer <i>(optional)</i> number of seconds a WebClient waits before disconnecting
+an idle connection; default 10 minutes
+@param ContentParams  <i>(optional)</i> name of concrete implementation of HTTP::Daemon::Threaded::ContentParams
+@param DocRoot		<i>(optional)</i> root directory for default file based content handler
+@param ProductTokens	<i>(optional)</i> product token string to return to client; default
+is 'HTTP::Daemon::Threaded/<version>'
+@param MediaTypes		<i>(optional)</i> hashref mapping 'Content-Type' specifications to
+file qualifier strings. Values may be either a single string literal, or
+@param SelectInterval	<i>(optional)</i> seconds to wait in select()'s on sockets. May be fractional; default 0.5
+
+@return		HTTP::Daemon::Threaded object
+
+
+=end classdoc
+
+=cut
 sub new {
 	my ($class, %args) = @_;
 
@@ -177,11 +190,18 @@ sub new {
 	return $self;
 }
 
-#/**
-# Thread::Apartment::MuxServer::run() implementation.
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Thread::Apartment::MuxServer::run() implementation.
+
+@return		1
+
+
+=end classdoc
+
+=cut
 sub run {
 	my $self = shift;
 
@@ -214,11 +234,18 @@ sub status {
 	return $_[0]->{_status};
 }
 
-#/**
-# Overrides Thread::Apartment::Server::get_simplex_methods()
-#
-# @return		hashref of simplex method names
-#*/
+=pod
+
+=begin classdoc
+
+Overrides Thread::Apartment::Server::get_simplex_methods()
+
+@return		hashref of simplex method names
+
+
+=end classdoc
+
+=cut
 sub get_simplex_methods {
 	return {
 		close => 1,
@@ -227,13 +254,20 @@ sub get_simplex_methods {
 	};
 }
 
-#/**
-# Closes the listen socket and stops all the WebClient
-# threads.
-#
-# @simplex
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Closes the listen socket and stops all the WebClient
+threads.
+
+@simplex
+@return		1
+
+
+=end classdoc
+
+=cut
 sub close {
 	my $self = shift;
 
@@ -255,19 +289,33 @@ sub close {
 	return 1;
 }
 
-#/**
-# Return the listener socket.
-#
-# @return		HTTP::Daemon::Threaded::Socket listen socket object
-#*/
+=pod
+
+=begin classdoc
+
+Return the listener socket.
+
+@return		HTTP::Daemon::Threaded::Socket listen socket object
+
+
+=end classdoc
+
+=cut
 sub getSocket { return shift->{_fd}; }
-#/**
-# Handle listen socket events. Accepts a new connection request,
-# allocates a WebClient to handle it, and passes the new socket
-# to the WebClient
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Handle listen socket events. Accepts a new connection request,
+allocates a WebClient to handle it, and passes the new socket
+to the WebClient
+
+@return		1
+
+
+=end classdoc
+
+=cut
 sub handleSocketEvent {
 	my $self = shift;
 
@@ -294,12 +342,19 @@ sub handleSocketEvent {
 #	do we need to close the file here ?
 #	maybe we should just let the clients accept() ?
 #
-#/**
-# Handle socket errors.
-#
-# @deprecated
-# @return		undef
-#*/
+=pod
+
+=begin classdoc
+
+Handle socket errors.
+
+@deprecated
+@return		undef
+
+
+=end classdoc
+
+=cut
 sub handleSocketError {
 	my $self = shift;
 
@@ -318,15 +373,22 @@ sub _get_client {
 	return $client ? $self->{_clients}[$client] : undef;
 }
 
-#/**
-# Set log level. Called from WebClient when loglevel
-# update is requested.
-#
-# @simplex
-# @param $level		new log level
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Set log level. Called from WebClient when loglevel
+update is requested.
+
+@simplex
+@param $level		new log level
+
+@return		1
+
+
+=end classdoc
+
+=cut
 sub setLogLevel {
 	my ($self, $level) = @_;
 
@@ -335,24 +397,38 @@ sub setLogLevel {
 	$self->{LogLevel} = $level;
 	return 1;
 }
-#/**
-# Set IO::Select() interval. Called when
-# HTTP::Daemon::Threaded select interval is updated.
-#
-# @simplex
-# @param $interval		new interval; fractional number of seconds
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Set IO::Select() interval. Called when
+HTTP::Daemon::Threaded select interval is updated.
+
+@simplex
+@param $interval		new interval; fractional number of seconds
+
+@return		1
+
+
+=end classdoc
+
+=cut
 sub setListenInterval {
 	$_[0]->{_sktsel}->setTimeout($_[1]);
 }
-#/**
-# Get IO::Select() interval. Called when HTTP::Daemon::Threaded
-# config info is requested.
-#
-# @return		current listener interval
-#*/
+=pod
+
+=begin classdoc
+
+Get IO::Select() interval. Called when HTTP::Daemon::Threaded
+config info is requested.
+
+@return		current listener interval
+
+
+=end classdoc
+
+=cut
 sub getListenInterval {
 	return $_[0]->{_sktsel}->getTimeout();
 }

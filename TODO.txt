@@ -1,6 +1,10 @@
 HTTP::Daemon::Threaded TO DO:
 
+- add a STDERR error log redirect
+
 - SSL support via Crypt::SSLeay(or IO::Socket::SSL) + OpenSSL
+
+- better optimization for CGIAdapter
 
 - add user auth support
 

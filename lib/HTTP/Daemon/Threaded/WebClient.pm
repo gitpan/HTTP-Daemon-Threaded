@@ -1,41 +1,49 @@
-#/**
-# Provides web-based request handling. A pool of WebClient
-# objects are created and managed by HTTP::Daemon::Threaded::Listener. As
-# web connection requests are received, a WebClient
-# is allocated and assigned the network connection. A minimal
-# HTTP protocol implementation is provided via a subclass of HTTP::Daemon::ClientConn.
-# As requests are received, they are processed as needed,
-# possibly resulting in calls to any installed content handler components.
-# <p>
-# Content handlers are specified as an arrayref of 2-tuples
-# consisting of
-# <pre>
-# [ regular expression string, content handler class name ]
-# </pre>
-# When a client HTTP request is received, each registered content handler's regular expression
-# string is applied to the URI <i>in the order in which the handler's are listed in the
-# content handler map</i> until a match is found, at which point the content handler class's
-# <code>getContent()/putContent()/getHeader()</code> method is invoked.
-# If no regular expression matches the URI,
-# a HTTP 404 (NOT FOUND) error is returned to the client.
-# <p>
-# Application specific parameters for content handlers may be provided by
-# creating a concrete implemention of the HTTP::Daemon::Threaded::ContentParams
-# class, and supplying any constructor parameters as additional key/value
-# pairs in the WebClient constructor hash.
-# <p>
-# Copyright&copy 2006, Dean Arnold, Presicient Corp., USA<br>
-# All rights reserved.
-# <p>
-# Licensed under the Academic Free License version 2.1, as specified in the
-# License.txt file included in this software package, or at
-# <a href='http://www.opensource.org/licenses/afl-2.1.php'>OpenSource.org</a>.
-#
-# @author D. Arnold
-# @since 2006-08-21
-# @self	$self
-#
-#*/
+=pod
+
+=begin classdoc
+
+Provides web-based request handling. A pool of WebClient
+objects are created and managed by HTTP::Daemon::Threaded::Listener. As
+web connection requests are received, a WebClient
+is allocated and assigned the network connection. A minimal
+HTTP protocol implementation is provided via a subclass of HTTP::Daemon::ClientConn.
+As requests are received, they are processed as needed,
+possibly resulting in calls to any installed content handler components.
+<p>
+Content handlers are specified as an arrayref of 2-tuples
+consisting of
+<pre>
+[ regular expression string, content handler class name ]
+</pre>
+When a client HTTP request is received, each registered content handler's regular expression
+string is applied to the URI <i>in the order in which the handler's are listed in the
+content handler map</i> until a match is found, at which point the content handler class's
+<code>getContent()/putContent()/getHeader()</code> method is invoked.
+If no regular expression matches the URI,
+a HTTP 404 (NOT FOUND) error is returned to the client.
+<p>
+Application specific parameters for content handlers may be provided by
+creating a concrete implemention of the HTTP::Daemon::Threaded::ContentParams
+class, and supplying any constructor parameters as additional key/value
+pairs in the WebClient constructor hash.
+<p>
+Copyright&copy 2006-2008, Dean Arnold, Presicient Corp., USA<br>
+All rights reserved.
+<p>
+Licensed under the Academic Free License version 3.0, as specified at
+<a href='http://www.opensource.org/licenses/afl-3.0.php'>OpenSource.org</a>.
+
+@author D. Arnold
+@since 2006-08-21
+@self	$self
+
+=end classdoc
+
+=cut
+
+use strict;
+use warnings;
+
 package HTTP::Daemon::Threaded::WebClient;
 use Socket;
 use threads;
@@ -46,51 +54,60 @@ use HTTP::Response;
 use LWP::MediaTypes qw(add_type);
 use HTTP::Daemon::Threaded::Socket;
 use HTTP::Daemon::Threaded::Logable;
+use HTTP::Daemon::Threaded::CGIAdapter;
 use Thread::Apartment::MuxServer;
+use URI::Escape;
+use CGI;
 use base qw(HTTP::Daemon::Threaded::Logable Thread::Apartment::MuxServer);
 
-use strict;
-use warnings;
+our $VERSION = '0.91';
 
-our $VERSION = '0.90';
+=pod
 
-#/**
-# Constructor. Creates an empty HTTP::Daemon::Threaded::Socket object.
-# Creates any specified ContentParams object, and installs the content handler map.
-# <p>
-# Note that the following parameters are recognized by
-# HTTP::Daemon::Threaded::WebClient, but
-# applications may supply additional parameter key/value pairs
-# which will be provided to the constructor for any specified
-# HTTP::Daemon::Threaded::ContentParams class.
-#
-# @param HTTPD		the parent daemon object
-# @param LogLevel		<i>(optional)</i> logging level; 1 => errors only; 2 => errors and warnings only; 3 => errors, warnings,
-#						and info messages; default 1
-# @param EventLogger <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
-#					event notifications (except for web requests)
-# @param WebLogger	<i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
-#					web request notifications
-# @param Handlers	arrayref mapping URL regex strings to handler classes
-# @param ID			unique client identifier
-# @param InactivityTimer <i>(optional)</i> number of seconds to wait before disconnecting an idle connection
-# @param ContentParams	<i>(optional)</i> name of a ContentsParam concrete implementation
-# @param UserAuth		<i>(optional)</i> User authentication package name <i>(not yet supported)</i>
-# @param SessionCache	<i>(optional)</i> threads::shared object implementing HTTP::Daemon::Threaded::SessionCache
-# @param DocRoot		<i>(optional)</i> root directory for default file based content handler
-# @param URL			the base address/port of our listener
-# @param ProductTokens	product token string from listener
-# @param MediaTypes		<i>(optional)</i> hashref mapping 'Content-Type' specifications to
-#						file qualifier strings. Values may be either a single string literal, or
-#						an arrayref of string literals, e.g.,<br>
-#						<code>MediaTypes =&gt; { 'text/css' => 'css' }</code>. Used to
-#						add media types for LWP::MediaTypes::guess_media_type()
-# @param FreeList	free client list; threads::shared array optimized to quickly
-#					allocate/free WebClient objects
-# @param SelectInterval	seconds to wait in select()'s on sockets. May be fractional; default 0.5
-#
-# @return		HTTP::Daemon::Threaded::WebClient object
-#*/
+=begin classdoc
+
+@constructor
+
+Creates an empty HTTP::Daemon::Threaded::Socket object.
+Creates any specified ContentParams object, and installs the content handler map.
+<p>
+Note that the following parameters are recognized by
+HTTP::Daemon::Threaded::WebClient, but
+applications may supply additional parameter key/value pairs
+which will be provided to the constructor for any specified
+HTTP::Daemon::Threaded::ContentParams class.
+
+@param HTTPD		the parent daemon object
+@param LogLevel		<i>(optional)</i> logging level; 1 => errors only; 2 => errors and warnings only; 3 => errors, warnings,
+						and info messages; default 1
+@param EventLogger <i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+					event notifications (except for web requests)
+@param WebLogger	<i>(optional)</i> Instance of a HTTP::Daemon::Threaded::Logger to receive
+					web request notifications
+@param Handlers	arrayref mapping URL regex strings to handler classes
+@param ID			unique client identifier
+@param InactivityTimer <i>(optional)</i> number of seconds to wait before disconnecting an idle connection
+@param ContentParams	<i>(optional)</i> name of a ContentsParam concrete implementation
+@param UserAuth		<i>(optional)</i> User authentication package name <i>(not yet supported)</i>
+@param SessionCache	<i>(optional)</i> threads::shared object implementing HTTP::Daemon::Threaded::SessionCache
+@param DocRoot		<i>(optional)</i> root directory for default file based content handler
+@param URL			the base address/port of our listener
+@param ProductTokens	product token string from listener
+@param MediaTypes		<i>(optional)</i> hashref mapping 'Content-Type' specifications to
+						file qualifier strings. Values may be either a single string literal, or
+						an arrayref of string literals, e.g.,<br>
+						<code>MediaTypes =&gt; { 'text/css' => 'css' }</code>. Used to
+						add media types for LWP::MediaTypes::guess_media_type()
+@param FreeList	free client list; threads::shared array optimized to quickly
+					allocate/free WebClient objects
+@param SelectInterval	seconds to wait in select()'s on sockets. May be fractional; default 0.5
+
+@return		HTTP::Daemon::Threaded::WebClient object
+
+=end classdoc
+
+=cut
+
 sub new {
 	my ($class, %args) = @_;
 #
@@ -156,31 +173,48 @@ sub new {
 		add_type($ct => (ref $fq ? @$fq : $fq))
 			while (($ct, $fq) = each %$media);
 	}
-
+#
+#	crate local'ized %ENV
+#
+	local *ENV = { %ENV };
 	return $self;
 }
 
-#/**
-# Overrides Thread::Apartment::Server::get_simplex_methods().
-#
-# @return		hashref of simplex method names
-#*/
+=pod
+
+=begin classdoc
+
+Overrides Thread::Apartment::Server::get_simplex_methods().
+
+@return		hashref of simplex method names
+
+=end classdoc
+
+=cut
+
 sub get_simplex_methods {
 	return {
 		setLogLevel => 1,
 	};
 }
-#/**
-# Accepts a web client connection. Called from HTTP::Daemon::Threaded when a new connection
-# event occurs. Collects the peer info for logging purposes.
-# Converts the supplied socket file number to a HTTP::Daemon::Threaded::Socket
-# object.
-#
-# @param $fn	file number of the new socket
-#
-# @return		the object
-# @see	HTTP::Daemon::Threaded::Socket
-#*/
+=pod
+
+=begin classdoc
+
+Accepts a web client connection. Called from HTTP::Daemon::Threaded when a new connection
+event occurs. Collects the peer info for logging purposes.
+Converts the supplied socket file number to a HTTP::Daemon::Threaded::Socket
+object.
+
+@param $fn	file number of the new socket
+
+@return		the object
+@see	HTTP::Daemon::Threaded::Socket
+
+=end classdoc
+
+=cut
+
 sub acceptConnection {
 	my ($self, $fn) = @_;
 #
@@ -220,11 +254,18 @@ sub acceptConnection {
 	return $self->{ID};
 }
 
-#/**
-# Thread::Apartment::MuxServer::run() implementation.
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Thread::Apartment::MuxServer::run() implementation.
+
+@return		1
+
+=end classdoc
+
+=cut
+
 sub run {
 	my $self = shift;
 
@@ -271,22 +312,28 @@ sub _shutdown {
 	return 1;
 }
 
-#/**
-# Handles a socket event. Accumulates a client request, parses it,
-# and then dispatches to the associated URL handler. Only a single
-# client request is handled, but the connection may be retained
-# indefinitely (for HTTP 1.1 Connection: keepalive clients).
-#
-# @param $fd	the HTTP::Daemon::Threaded::Socket object on which the event occured
-#
-# @return		the object
-#*/
+=pod
+
+=begin classdoc
+
+Handles a socket event. Accumulates a client request, parses it,
+and then dispatches to the associated URL handler. Only a single
+client request is handled, but the connection may be retained
+indefinitely (for HTTP 1.1 Connection: keepalive clients).
+
+@param $fd	the HTTP::Daemon::Threaded::Socket object on which the event occured
+
+@return		the object
+
+=end classdoc
+
+=cut
+
 sub handleSocketEvent {
 	my ($self, $fd) = @_;
 
 	my ($page, $method, $buffer, $request, $cgi, $params, $handler, $session);
 	my $close_on_resp;
-#	my $prefix = $self->{LogPrefix}{fileno($fd)};
 	$fd = $self->{_curr_skt};
 	my $handlers = $self->{Handlers};
 #
@@ -311,7 +358,6 @@ sub handleSocketEvent {
 	$self->logInfo("Got a session\n") if $session;
 	$page = $request->uri;
 	$method = $request->method;
-#	$self->logInfo("$prefix: Got web request\n$buffer\n");
 	$self->logInfo("Got web request for $method $page\n");
 	$self->{_idle_timer} = time();
 #
@@ -376,8 +422,6 @@ sub handleSocketEvent {
 		$request->content_type();
 
 	if ($ct && ($ct eq 'application/x-www-form-urlencoded')) {
-#		$params = $request->decoded_content(),
-#		$self->logInfo("request is a " . (ref $request) . "\n"),
 		$params = $request->content(),
 		$cgi = 1
 			if ($method eq 'POST');
@@ -391,16 +435,14 @@ sub handleSocketEvent {
 			my ($key, $val);
 
 			foreach (@request) {
-				($key, $val) = (/^([^=]+)=(.*)$/);
+				($key, $val) = split /=/;
 #
-#	do we need this ? do LWP/HTTP module already handle this ?
+#	fixed per D. Hastings' bug report
+#	NOTE: the unescape might be faster by running the regex locally
 #
-				substr($key, $-[0], 3, chr(hex($1)))
-					while ($key=~/\%([0-9A-Fa-f]{2})/gc);
-
-				$val=~tr/\+/ /;
-				substr($val, $-[0], 3, chr(hex($1)))
-					while ($val=~/\%([0-9A-Fa-f]{2})/gc);
+				$key=~tr/+/ /;
+				$val=~tr/+/ /;
+				($key, $val) = uri_unescape($key, $val);
 #
 #	support duplicate params
 #
@@ -452,7 +494,28 @@ sub handleSocketEvent {
 			if $close_on_resp;
 		return 1;
 	}
-
+#
+#	if handler is a CGI, build a CGI object for it
+#
+	if ($handler->isa('HTTP::Daemon::Threaded::CGIHandler')) {
+		$self->logInfo("Routing to request for $page to handler " . (ref $handler) . "\n");
+#		print STDERR "*** routing CGI request\n";
+		my $cgireq = HTTP::Daemon::Threaded::CGIAdapter->new($request, $fd, $ct);
+#		print STDERR "*** got CGI request, create CGI object\n";
+		my $cgiobj = CGI->new();
+#		print STDERR "*** got CGI object, call handleCGI\n";
+		$handler->handleCGI($cgiobj, $session);
+#		print STDERR "*** got CGI response, send response\n";
+		my $rsp = $cgireq->restore->response;
+#		print STDERR "*** Response is \n", $rsp->as_string(), "\n";
+		$fd->send_response($rsp);
+#		print STDERR "*** sent response\n";
+		#
+		#	!!!BE CAREFUL WHEN MERGING W/ 1.01: async will eave stdin/stoud/ENV
+		#	in bogus states; we'll need to restore as needed
+	}
+	else {
+	
 	$self->logInfo("Routing to request for $page to handler " . (ref $handler) . "\n");
 	my $result =
 		($method eq 'HEAD') ?
@@ -460,7 +523,7 @@ sub handleSocketEvent {
 		($method eq 'PUT') ?
 			$handler->putContent($fd, $request, $page, $params, $session) :
 			$handler->getContent($fd, $request, $page, $params, $session);
-
+	}
 	$self->_shutdown()
 		if $close_on_resp;
 	return 1;
@@ -478,13 +541,20 @@ sub product_tokens
     return $_[0]->{ProductTokens};
 }
 
-#/**
-# Return a client to the free list.
-#
-# @param $client	ID of the client being freed
-#
-# @return		1
-#*/
+=pod
+
+=begin classdoc
+
+Return a client to the free list.
+
+@param $client	ID of the client being freed
+
+@return		1
+
+=end classdoc
+
+=cut
+
 sub freeClient {
 	my $self = shift;
 	{
@@ -494,3 +564,4 @@ sub freeClient {
 }
 
 1;
+
